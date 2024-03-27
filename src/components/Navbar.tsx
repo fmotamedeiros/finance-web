@@ -2,7 +2,7 @@ import React from 'react';
 
 interface NavbarProps {
   title: string;
-  toggleSidebar: () => void; // Adicionado para permitir o toggle do sidebar
+  toggleSidebar: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ title, toggleSidebar }) => (

@@ -1,17 +1,34 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginUser } from '../services/userService';
+import { useUser } from '../context/UserContext';
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
+  const { login, isUserLoggedIn } = useUser();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Aqui você pode adicionar a lógica de autenticação
-    console.log(username, password);
-    navigate('/dashboard');
+  useEffect(() => {
+    if (isUserLoggedIn) {
+      navigate('/dashboard');
+    }
+  }, []);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError('');
+
+    try {
+      const response = await loginUser({ email, password });
+      login(response);
+      console.log('Login successfully:', response);
+      navigate('/dashboard');
+    } catch (error) {
+      setError('Erro logging in.');
+    }
   };
 
   return (
@@ -19,12 +36,12 @@ const Login: React.FC = () => {
       <form className="login-form" onSubmit={handleSubmit}>
         <h2>Login</h2>
         <div className="form-group">
-          <label htmlFor="username">Username:</label>
+          <label htmlFor="username">Email:</label>
           <input
             id="username"
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="form-group">
@@ -37,6 +54,7 @@ const Login: React.FC = () => {
           />
         </div>
         <button type="submit">Login</button>
+        <Link to="/signup">Click here to register</Link>
       </form>
     </div>
   );
