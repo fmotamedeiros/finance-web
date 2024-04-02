@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { userService } from '../services/userService';
-import { UserData } from '../types/types';
+import { RegisterData } from '../types/types';
 
 const Signup: React.FC = () => {
-  const [formData, setFormData] = useState<Omit<UserData, 'id' | 'role'>>({
+  const [formData, setFormData] = useState<Omit<RegisterData, 'id' | 'role'>>({
     name: '',
     email: '',
     password: '',

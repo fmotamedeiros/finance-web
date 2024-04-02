@@ -1,8 +1,8 @@
-import { TransactionData, TransactionResponse } from "../types/types";
+import { TransactionData } from "../types/types";
 import api from "./api";
 
 const transactionService = {
-  createTransaction: async (transactionData: TransactionData): Promise<TransactionResponse> => {
+  createTransaction: async (transactionData: TransactionData): Promise<TransactionData> => {
     const response = await api.post('transactions', transactionData, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -11,7 +11,7 @@ const transactionService = {
     return response.data;
   },
 
-  listTransactions: async (accountId: number): Promise<TransactionResponse[]> => {
+  listTransactions: async (accountId: number): Promise<TransactionData[]> => {
     const response = await api.get(`accounts/${accountId}/transactions`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -20,7 +20,7 @@ const transactionService = {
     return response.data;
   },
 
-  updateTransaction: async (transactionId: number, transactionData: TransactionData): Promise<TransactionResponse> => {
+  updateTransaction: async (transactionId: number, transactionData: TransactionData): Promise<TransactionData> => {
     const response = await api.put(`transactions/${transactionId}`, transactionData, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,

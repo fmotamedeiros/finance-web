@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import categoryService from '../services/categoryService';
-import { CategoryResponse } from '../types/types';
+import { CategoryData } from '../types/types';
 import { useUser } from '../context/UserContext';
+import CategoryList from '../components/category/CategoryList';
+import CategoryForm from '../components/category/CategoryForm';
+import ErrorMessage from '../components/ErrorMessage';
 
 const Categories: React.FC = () => {
-  const [categories, setCategories] = useState<CategoryResponse[]>([]);
-  const [newCategoryName, setNewCategoryName] = useState('');
+  const [categories, setCategories] = useState<CategoryData[]>([]);
+  const [categoryToEdit, setCategoryToEdit] = useState<CategoryData | null>(null);
   const [error, setError] = useState('');
 
   const { user } = useUser();
@@ -26,23 +29,33 @@ const Categories: React.FC = () => {
     fetchCategories();
   }, []);
 
-  const handleAddCategory = async () => {
+  const handleSaveCategory = async (category: CategoryData) => {
     try {
       if (user && user.id) {
-        await categoryService.createCategory({ userId: user.id, name: newCategoryName });
-        setNewCategoryName('');
+        /* Updating an existing category */
+        if (category.id) {
+          await categoryService.updateCategory(category.id, category);
+        } 
+        
+        /* Creating new category */
+        if (!category.id && user.id){
+          await categoryService.createCategory(category);
+        }
+
         fetchCategories();
       }
     } catch (error) {
-      console.error('Error registering category.', error);
-      setError('Error registering category.');
+      console.error('Error saving category.', error);
+      setError('Error saving category.');
     }
   };
 
-  const handleCategoryTransaction = async (categoryId: number) => {
+  const handleDeleteCategory = async (category: CategoryData) => {
     try {
+      if (!category.id) throw Error();
+
       if (user && user.id) {
-        await categoryService.deleteCategory(categoryId);
+        await categoryService.deleteCategory(category.id);
         fetchCategories();
       }
     } catch (error) {
@@ -51,30 +64,15 @@ const Categories: React.FC = () => {
     }
   }
 
+  const handleEditCategory = (category: CategoryData) => {
+    setCategoryToEdit(category);
+  };
+
   return (
     <div>
-      <h2>Add Category</h2>
-      <div className='form-container'>
-        <div className="form-group">
-          <label htmlFor="name">Category Name:</label>
-          <input
-            type="text"
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-          />
-          <button className='add-button' onClick={handleAddCategory}>Add Category</button>
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-      </div>
-      {categories.length > 0 && <h2>Categories</h2>}
-      <ul className="entity-list">
-        {categories.map((category) => (
-          <li key={category.id} className="entity-item">
-            <span>{category.name}</span>
-            <button className="delete-button" onClick={() => handleCategoryTransaction(category.id)}>Remove</button>
-          </li>
-        ))}
-      </ul>
+      <ErrorMessage message={error}></ErrorMessage>
+      <CategoryForm onSubmit={handleSaveCategory} categoryToEdit={categoryToEdit}></CategoryForm>
+      <CategoryList categories={categories} onRemove={handleDeleteCategory} onEdit={handleEditCategory}></CategoryList>
     </div>
   );
 };

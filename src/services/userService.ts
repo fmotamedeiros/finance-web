@@ -1,9 +1,9 @@
 import api from './api';
-import { AuthResponse, UserData, LoginData } from '../types/types';
+import { AuthResponse, UserData, LoginData, RegisterData } from '../types/types';
 import { AxiosError } from 'axios';
 
 const userService = {
-  register: async (userData: UserData): Promise<UserData> => {
+  register: async (userData: RegisterData): Promise<UserData> => {
     try {
       const response = await api.post('users', userData);
       const data: UserData = response.data;

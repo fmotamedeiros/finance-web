@@ -1,8 +1,8 @@
-import { CategoryData, CategoryResponse } from "../types/types";
+import { CategoryData } from "../types/types";
 import api from "./api";
 
 const categoryService = {
-  createCategory: async (categoryData: CategoryData): Promise<CategoryResponse> => {
+  createCategory: async (categoryData: CategoryData): Promise<CategoryData> => {
     const response = await api.post('categories', categoryData, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -11,7 +11,7 @@ const categoryService = {
     return response.data;
   },
 
-  updateCategory: async (categoryId: number, categoryData: CategoryData): Promise<CategoryResponse> => {
+  updateCategory: async (categoryId: number, categoryData: CategoryData): Promise<CategoryData> => {
     const response = await api.put(`categories/${categoryId}`, categoryData, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -28,7 +28,7 @@ const categoryService = {
     });
   },
 
-  listCategoriesByUser: async (userId: number): Promise<CategoryResponse[]> => {
+  listCategoriesByUser: async (userId: number): Promise<CategoryData[]> => {
     const response = await api.get(`users/${userId}/categories`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,

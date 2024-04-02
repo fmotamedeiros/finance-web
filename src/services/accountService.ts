@@ -1,8 +1,8 @@
-import { AccountData, AccountResponse } from '../types/types';
+import { AccountData } from '../types/types';
 import api from './api';
 
 const accountService = {
-  createAccount: async (accountData: AccountData): Promise<AccountResponse> => {
+  createAccount: async (accountData: AccountData): Promise<AccountData> => {
     const response = await api.post('accounts', accountData, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -11,7 +11,7 @@ const accountService = {
     return response.data;
   },
 
-  updateAccount: async (accountId: number, accountData: AccountData): Promise<AccountResponse> => {
+  updateAccount: async (accountId: number, accountData: AccountData): Promise<AccountData> => {
     const response = await api.put(`accounts/${accountId}`, accountData, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -28,7 +28,7 @@ const accountService = {
     });
   },
 
-  listAccountsByUser: async (userId: number): Promise<AccountResponse[]> => {
+  listAccountsByUser: async (userId: number): Promise<AccountData[]> => {
     const response = await api.get(`users/${userId}/accounts`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -37,7 +37,7 @@ const accountService = {
     return response.data;
   },
 
-  listTransactionsByAccount: async (accountId: number): Promise<AccountResponse[]> => {
+  listTransactionsByAccount: async (accountId: number): Promise<AccountData[]> => {
     const response = await api.get(`accounts/${accountId}/transactions`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,

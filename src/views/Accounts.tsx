@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { AccountResponse } from '../types/types';
+import { AccountData } from '../types/types';
 import accountService from '../services/accountService';
 import { useUser } from '../context/UserContext';
+import AccountList from '../components/account/AccountList';
+import AccountForm from '../components/account/AccountForm';
+import ErrorMessage from '../components/ErrorMessage';
 
 const Accounts: React.FC = () => {
-  const [accounts, setAccounts] = useState<AccountResponse[]>([]);
-  const [name, setName] = useState('');
-  const [balance, setBalance] = useState('');
+  const [accounts, setAccounts] = useState<AccountData[]>([]);
+  const [accountToEdit, setAccountToEdit] = useState<AccountData | null>(null);
   const [error, setError] = useState('');
 
   const { user } = useUser();
@@ -27,77 +29,50 @@ const Accounts: React.FC = () => {
     fetchAccounts();
   }, []);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleSaveAccount = async (account: AccountData) => {
     setError('');
 
-    const formattedBalance = parseFloat(balance);
-    if (!isNaN(formattedBalance) && formattedBalance >= 0) {
-      try {
-        await accountService.createAccount({ userId: user?.id, name, balance: formattedBalance });
-        console.log('Account registered:', { userId: user?.id, name, balance });
-        setName('');
-        setBalance('');
-        fetchAccounts();
-      } catch (error) {
-        setError('Error registering account.');
+    try {
+      if (user) {
+
+        /* Updating an existing account */
+        if (account.id) {
+          await accountService.updateAccount(account.id, account);
+        } 
+        
+        /* Creating new account */
+        if (!account.id && user.id){
+          await accountService.createAccount({...account, userId: user.id});
+        }
       }
-    } else {
-      setError('Invalid initial balance.');
+      fetchAccounts();
+    } catch (error) {
+      console.error('Error saving account.', error);
+      setError('Error saving account.');
     }
   };
 
-  const handleAccountTransaction = async (accountId: number) => {
+  const handleDeleteAccount = async (account: AccountData) => {
     setError('');
     try {
-      await accountService.deleteAccount(accountId);
+      if (!account.id) throw Error();
+
+      await accountService.deleteAccount(account.id);
       fetchAccounts();
     } catch (error) {
       setError('Error deleting account.');
     }
   }
 
+  const handleEditAccount = (account: AccountData) => {
+    setAccountToEdit(account);
+  };
+
   return (
     <div>
-      <h2>Add Account</h2>
-      <div className='form-container'>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Account Name:</label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="balance">Initial Balance:</label>
-            <input
-              type="number"
-              id="balance"
-              value={balance}
-              onChange={(e) => setBalance(e.target.value)}
-              min="0"
-              step="0.01"
-              required
-            />
-          </div>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-          <button type="submit" className="add-button">Add Account</button>
-        </form>
-      </div>
-      {accounts.length > 0 && <h2>Accounts</h2>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <ul className="entity-list">
-        {accounts.map(account => (
-          <li key={account.id} className="entity-item">
-            <span>{account.name} - Saldo: {account.balance}</span>
-            <button className="delete-button" onClick={() => handleAccountTransaction(account.id)}>Remove</button>
-          </li>
-        ))}
-      </ul>
+      <ErrorMessage message={error}></ErrorMessage>
+      <AccountForm onSubmit={handleSaveAccount} accountToEdit={accountToEdit}></AccountForm>
+      <AccountList onEdit={handleEditAccount} onRemove={handleDeleteAccount} accounts={accounts}></AccountList>
     </div>
   );
 };
